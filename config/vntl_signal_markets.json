@@ -1,0 +1,19 @@
+{
+  "markets": [
+    {
+      "dex": "vntl",
+      "coin": "vntl:ANTHROPIC",
+      "title": "Anthropic"
+    },
+    {
+      "dex": "vntl",
+      "coin": "vntl:OPENAI",
+      "title": "OpenAI"
+    },
+    {
+      "dex": "vntl",
+      "coin": "vntl:SPACEX",
+      "title": "SpaceX"
+    }
+  ]
+}
