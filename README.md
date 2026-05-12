@@ -52,6 +52,27 @@ Runtime data and logs stay on EC2 and are not committed:
 - `data/`
 - `logs/`
 
+## EC2 `.env`
+
+운영용 텔레그램/슬랙 값은 GitHub에 올리지 말고 EC2 로컬 `.env`에만 둡니다.
+
+```bash
+cd /home/ec2-user/anthropic_alarm
+cp .env.example .env
+chmod 600 .env
+```
+
+`.env` 예시:
+
+```bash
+TELEGRAM_BOT_TOKEN=your_real_bot_token
+TELEGRAM_CHAT_ID=your_real_chat_id
+# Optional
+# SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
+```
+
+데몬은 매 실행 전에 `/home/ec2-user/anthropic_alarm/.env`를 자동으로 읽습니다.
+
 ## EC2 + PM2
 
 ```bash
