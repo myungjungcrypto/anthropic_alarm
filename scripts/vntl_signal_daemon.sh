@@ -23,15 +23,21 @@ load_env_file() {
 }
 
 run_once() {
+  local notify_startup="${1:-0}"
   cd "$REPO_DIR"
   if [ "$GIT_PULL_BEFORE_RUN" = "1" ]; then
     echo "$LOG_PREFIX $(date -u +%FT%TZ) git pull --ff-only origin $GIT_BRANCH"
     git pull --ff-only origin "$GIT_BRANCH"
   fi
 
-  echo "$LOG_PREFIX $(date -u +%FT%TZ) python3 scripts/vntl_signal_monitor.py $MONITOR_ARGS"
+  local command_args="$MONITOR_ARGS"
+  if [ "$notify_startup" = "1" ]; then
+    command_args="$command_args --notify-startup"
+  fi
+
+  echo "$LOG_PREFIX $(date -u +%FT%TZ) python3 scripts/vntl_signal_monitor.py $command_args"
   # shellcheck disable=SC2086
-  "$PYTHON_BIN" scripts/vntl_signal_monitor.py $MONITOR_ARGS
+  "$PYTHON_BIN" scripts/vntl_signal_monitor.py $command_args
 }
 
 sleep_until_next_window() {
@@ -52,11 +58,11 @@ sleep_until_next_window() {
 
 if [ "$RUN_IMMEDIATELY" = "1" ]; then
   load_env_file
-  run_once
+  run_once 1
 fi
 
 while true; do
   sleep_until_next_window
   load_env_file
-  run_once
+  run_once 0
 done

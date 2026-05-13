@@ -395,6 +395,25 @@ def format_signal_message(signal: dict[str, Any]) -> str:
     )
 
 
+def format_startup_message(config: SignalConfig, markets: list[MarketSpec]) -> str:
+    market_list = ", ".join(market.title for market in markets)
+    return "\n".join(
+        [
+            "vntl-signal-monitor started",
+            f"markets: {market_list}",
+            f"short_entry: funding >= {config.short_trigger}%/h",
+            f"short_exit: funding < {config.short_exit}%/h",
+            (
+                "long_entry: funding <= "
+                f"{config.long_funding_max}%/h, cooldown >= {config.long_cooldown_hours}h, "
+                f"rebound_hours = {config.rebound_hours}, low_window_hours = {config.low_window_hours}"
+            ),
+            f"oracle_context_alert: inferred oracle 1h move >= {config.oracle_shock_threshold}%",
+            f"time: {to_iso8601(now_ms())}",
+        ]
+    )
+
+
 def load_monitor_state(path: Path) -> dict[str, Any]:
     return load_json(path, default={"markets": {}})
 
@@ -509,6 +528,22 @@ def send_telegram(bot_token: str, chat_id: str, text: str) -> None:
     )
     with urllib.request.urlopen(request, timeout=20):
         return
+
+
+def send_startup_notification(config: SignalConfig, markets: list[MarketSpec]) -> list[str]:
+    slack_webhook = os.environ.get("SLACK_WEBHOOK_URL")
+    telegram_bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    telegram_chat_id = os.environ.get("TELEGRAM_CHAT_ID")
+    text = format_startup_message(config=config, markets=markets)
+
+    channels: list[str] = []
+    if slack_webhook:
+        send_slack(slack_webhook, text)
+        channels.append("slack")
+    if telegram_bot_token and telegram_chat_id:
+        send_telegram(telegram_bot_token, telegram_chat_id, text)
+        channels.append("telegram")
+    return channels
 
 
 def deliver_notifications(notifications: list[dict[str, Any]]) -> list[dict[str, Any]]:

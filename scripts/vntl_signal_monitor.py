@@ -17,6 +17,7 @@ from vntl_signal_lib import (
     load_monitor_state,
     persist_monitor_outputs,
     save_monitor_state,
+    send_startup_notification,
 )
 
 
@@ -52,6 +53,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--rebound-hours", type=int, default=3)
     parser.add_argument("--low-window-hours", type=int, default=12)
     parser.add_argument("--oracle-shock-threshold-pct", type=Decimal, default=Decimal("5"))
+    parser.add_argument(
+        "--notify-startup",
+        action="store_true",
+        help="Send a startup notification with thresholds before processing signals.",
+    )
     parser.add_argument("--stdout-json", action="store_true", help="Print the run payload as JSON.")
     return parser.parse_args()
 
@@ -82,6 +88,7 @@ def main() -> int:
     )
 
     try:
+        startup_channels = send_startup_notification(config=config, markets=markets) if args.notify_startup else []
         signals = classify_markets(markets=markets, config=config)
         persist_monitor_outputs(args.output_dir, signals)
         previous_state = load_monitor_state(args.output_dir / "state.json")
@@ -100,6 +107,7 @@ def main() -> int:
         return 1
 
     payload = {
+        "startup_notification_channels": startup_channels,
         "signals": signals,
         "notifications": delivered,
         "output_dir": str(args.output_dir.resolve()),
