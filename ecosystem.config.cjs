@@ -19,5 +19,20 @@ module.exports = {
         MONITOR_ARGS: "--stdout-json",
       },
     },
+    {
+      name: "vntl-telegram-status-bot",
+      script: "./scripts/telegram_status_bot.py",
+      interpreter: "/usr/bin/python3",
+      cwd: "/home/ec2-user/anthropic_alarm",
+      autorestart: true,
+      watch: false,
+      max_restarts: 20,
+      restart_delay: 5000,
+      env: {
+        REPO_DIR: "/home/ec2-user/anthropic_alarm",
+        PYTHON_BIN: "/usr/bin/python3",
+        ENV_FILE: "/home/ec2-user/anthropic_alarm/.env",
+      },
+    },
   ],
 };

@@ -35,6 +35,7 @@ historical oracle feed가 직접 제공되지 않아서, 스크립트는 `close 
 - [scripts/vntl_signal_lib.py](/Users/myunggeunjung/trade.xyz/scripts/vntl_signal_lib.py)
 - [scripts/vntl_signal_monitor.py](/Users/myunggeunjung/trade.xyz/scripts/vntl_signal_monitor.py)
 - [scripts/vntl_signal_daemon.sh](/Users/myunggeunjung/trade.xyz/scripts/vntl_signal_daemon.sh)
+- [scripts/telegram_status_bot.py](/Users/myunggeunjung/trade.xyz/scripts/telegram_status_bot.py)
 
 ## Environment
 
@@ -74,6 +75,18 @@ TELEGRAM_CHAT_ID=your_real_chat_id
 데몬은 매 실행 전에 `/home/ec2-user/anthropic_alarm/.env`를 자동으로 읽습니다.
 그리고 PM2 프로세스가 시작될 때 1회, 텔레그램으로 `모니터링 시작 + 현재 임계값` 알림을 보냅니다.
 
+## Telegram commands
+
+- `/status`
+  - 현재 마켓별 상태
+  - estimated funding
+  - realized funding
+  - mark/oracle 괴리
+  - 최근 extreme 이후 경과시간
+  - 현재 임계값
+- `/help`
+  - 사용 가능한 명령 표시
+
 ## EC2 + PM2
 
 ```bash
@@ -88,8 +101,11 @@ Useful commands:
 ```bash
 pm2 status
 pm2 logs vntl-signal-monitor
+pm2 logs vntl-telegram-status-bot
 pm2 restart vntl-signal-monitor --update-env
+pm2 restart vntl-telegram-status-bot --update-env
 ```
 
 The daemon pulls `origin/main` before each hourly run and then executes the monitor.
 Only the first run after daemon start sends the startup threshold message. The later hourly runs only send signal-change alerts.
+The second PM2 process listens for Telegram commands and replies to `/status`.
