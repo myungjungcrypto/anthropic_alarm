@@ -10,7 +10,7 @@ import time
 import urllib.error
 import urllib.request
 from dataclasses import asdict, dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -75,7 +75,7 @@ def now_ms() -> int:
 
 
 def to_iso8601(timestamp_ms: int) -> str:
-    return datetime.fromtimestamp(timestamp_ms / 1000, tz=UTC).isoformat()
+    return datetime.fromtimestamp(timestamp_ms / 1000, tz=timezone.utc).isoformat()
 
 
 def decimal_value(value: Any) -> Decimal:
