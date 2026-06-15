@@ -88,9 +88,17 @@ def main() -> int:
     )
 
     try:
-        startup_channels = send_startup_notification(config=config, markets=markets) if args.notify_startup else []
         signals = classify_markets(markets=markets, config=config)
         persist_monitor_outputs(args.output_dir, signals)
+        startup_channels = (
+            send_startup_notification(
+                config=config,
+                markets=markets,
+                state_path=args.output_dir / "startup_notification_state.json",
+            )
+            if args.notify_startup
+            else []
+        )
         previous_state = load_monitor_state(args.output_dir / "state.json")
         next_state, notifications = build_monitor_state(previous_state, signals)
         delivered = deliver_notifications(notifications)

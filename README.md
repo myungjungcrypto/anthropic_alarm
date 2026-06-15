@@ -74,6 +74,7 @@ TELEGRAM_CHAT_ID=your_real_chat_id
 
 데몬은 매 실행 전에 `/home/ec2-user/anthropic_alarm/.env`를 자동으로 읽습니다.
 그리고 PM2 프로세스가 시작될 때 1회, 텔레그램으로 `모니터링 시작 + 현재 임계값` 알림을 보냅니다.
+같은 종류의 시작 알람은 재시작 루프가 있더라도 최소 30분 동안 다시 보내지 않습니다.
 
 ## Telegram commands
 
@@ -107,5 +108,5 @@ pm2 restart vntl-telegram-status-bot --update-env
 ```
 
 The daemon pulls `origin/main` before each hourly run and then executes the monitor.
-Only the first run after daemon start sends the startup threshold message. The later hourly runs only send signal-change alerts.
+Only the first successful run after daemon start sends the startup threshold message. The later hourly runs only send signal-change alerts.
 The second PM2 process listens for Telegram commands and replies to `/status`.

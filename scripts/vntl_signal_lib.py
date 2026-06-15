@@ -530,10 +530,20 @@ def send_telegram(bot_token: str, chat_id: str, text: str) -> None:
         return
 
 
-def send_startup_notification(config: SignalConfig, markets: list[MarketSpec]) -> list[str]:
+def send_startup_notification(
+    config: SignalConfig,
+    markets: list[MarketSpec],
+    state_path: Path,
+    min_interval_seconds: int = 1800,
+) -> list[str]:
     slack_webhook = os.environ.get("SLACK_WEBHOOK_URL")
     telegram_bot_token = os.environ.get("TELEGRAM_BOT_TOKEN")
     telegram_chat_id = os.environ.get("TELEGRAM_CHAT_ID")
+    previous = load_json(state_path, default={})
+    last_sent_at = int(previous.get("last_sent_at", 0)) if isinstance(previous, dict) else 0
+    current_time = now_ms()
+    if last_sent_at and current_time - last_sent_at < min_interval_seconds * 1000:
+        return []
     text = format_startup_message(config=config, markets=markets)
 
     channels: list[str] = []
@@ -543,6 +553,15 @@ def send_startup_notification(config: SignalConfig, markets: list[MarketSpec]) -
     if telegram_bot_token and telegram_chat_id:
         send_telegram(telegram_bot_token, telegram_chat_id, text)
         channels.append("telegram")
+    if channels:
+        atomic_write_json(
+            state_path,
+            {
+                "last_sent_at": current_time,
+                "last_sent_at_iso": to_iso8601(current_time),
+                "channels": channels,
+            },
+        )
     return channels
 
 
