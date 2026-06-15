@@ -119,6 +119,7 @@ def main() -> int:
         "signals": signals,
         "notifications": delivered,
         "output_dir": str(args.output_dir.resolve()),
+        "error_count": sum(1 for signal in signals if signal["status"] == "ERROR"),
     }
 
     if args.stdout_json:
@@ -126,6 +127,7 @@ def main() -> int:
     else:
         print(f"markets: {len(signals)}")
         print(f"notifications_sent: {len(delivered)}")
+        print(f"errors: {payload['error_count']}")
         print(f"output_dir: {args.output_dir.resolve()}")
         for signal in signals:
             print(
@@ -134,7 +136,7 @@ def main() -> int:
                 f"oracle_1h={signal.get('oracle_proxy_change_1h_pct')}"
             )
 
-    return 0 if all(signal["status"] != "ERROR" for signal in signals) else 1
+    return 0
 
 
 if __name__ == "__main__":
